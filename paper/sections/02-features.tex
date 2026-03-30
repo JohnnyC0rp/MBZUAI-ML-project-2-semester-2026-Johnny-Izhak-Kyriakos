@@ -1,0 +1,38 @@
+\section{Feature Engineering}
+
+The best features were not generic transformations; they were domain features that translated banking intuition into measurable risk. We grouped the final engineered features into four families:
+\begin{itemize}
+    \item \textbf{Affordability ratios}: loan share of income, monthly payment share, debt pressure, and asset coverage.
+    \item \textbf{Delinquency severity}: weighted 30/60/90-day late-payment counts and their interactions with utilization and debt ratios.
+    \item \textbf{Derogatory burden}: count and severity aggregates for charge-offs, collections, bankruptcies, and public records.
+    \item \textbf{Semantic missingness}: borrower-context flags such as renter-without-property-value or owner-without-mortgage-balance.
+\end{itemize}
+
+Table~\ref{tab:feature-stages} shows how the project score moved as we layered these ideas into the pipeline. The biggest jump came from moving beyond basic preprocessing into finance-aware ratios and controlled interaction terms. Later gains were smaller, but still meaningful enough to matter on the leaderboard.
+
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabularx}{\linewidth}{@{} l c X @{}}
+        \toprule
+        Addition & Combined score & Why it helped \\
+        \midrule
+        Domain ratios + semantic missingness & 0.8225 & Added affordability, utilization, and context-aware missingness signals. \\
+        Controlled polynomial interactions & 0.8251 & Captured non-linear stress interactions without overgrowing the feature space. \\
+        Tree ensemble diversification & 0.8495 & Different tree families corrected different blind spots. \\
+        Target statistics + calibrated bagging & 0.8557 & Injected supervised structure into sparse categorical groups. \\
+        Neural branch + weighted fusion & 0.8576 & Added smooth non-linear structure on top of the tree family. \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Major feature-and-model milestones during the project.}
+    \label{tab:feature-stages}
+\end{table}
+
+The classification and regression tasks shared several strong signals, but the ranking was not identical. Figure~\ref{fig:feature-signal} shows that delinquency severity and utilization interactions dominate the class prediction task, while affordability and balance-sheet coverage become relatively more important for interest-rate prediction. That difference is exactly what we would expect in lending: default risk and pricing are related, but pricing also reacts to continuous affordability details.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{figures/feature_signal_comparison.png}
+    \caption{Top engineered features differ slightly between the classification and regression tasks.}
+    \label{fig:feature-signal}
+\end{figure}

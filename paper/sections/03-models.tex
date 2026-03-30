@@ -1,0 +1,35 @@
+\section{Model Selection and Tuning}
+
+We evaluated both simple and complex model families. Linear baselines were useful for orientation but quickly saturated. ExtraTrees gave a strong non-boosting reference, then XGBoost, LightGBM, and CatBoost supplied the main performance gains through stronger non-linear partitions and better handling of mixed-scale tabular signals \cite{xgboost,lightgbm,catboost}. The final public-best Kaggle pipeline, \texttt{meta\_overnight}, combined five branches:
+\begin{enumerate}
+    \item XGBoost on the engineered numeric feature matrix.
+    \item LightGBM on the same preprocessed matrix.
+    \item CatBoost on the engineered frame with categorical columns preserved.
+    \item ExtraTrees as a low-bias diversity branch.
+    \item A compact MPS neural branch that contributed a different error profile.
+\end{enumerate}
+
+Instead of retuning everything inside the public notebook, we reused the historically tuned branch settings and the previously learned blend/meta hyperparameters. This makes the notebook readable and reproducible while preserving the public-best model family that actually mattered on Kaggle.
+
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{@{} l c c c @{}}
+        \toprule
+        Model & Accuracy & \(R^2\) & Combined \\
+        \midrule
+        \texttt{meta\_overnight} (public best) & 0.8477 & 0.8513 & \textbf{0.8495} \\
+        \texttt{blend\_overnight} & 0.8424 & 0.8485 & 0.8455 \\
+        \texttt{target\_stats\_blend} & 0.8563 & 0.8552 & 0.8557 \\
+        \texttt{mlp\_meta\_stack\_v1} & 0.8587 & 0.8556 & 0.8572 \\
+        \texttt{mlp\_weighted\_blend\_v1} (local best) & 0.8600 & 0.8553 & \textbf{0.8576} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Representative validation leaderboard from the project history.}
+    \label{tab:model-leaderboard}
+\end{table}
+
+To reduce overfitting, we used a fixed stratified holdout split, explicit seeds, early stopping in the neural branch, and conservative tree regularization. We also resisted the temptation to submit every local improvement: the strongest local blend (\texttt{mlp\_weighted\_blend\_v1}) was excellent for validation analysis, but it relied on a deeper stack of nested branches and tiny residual weights. For the public repo and the final report, \texttt{meta\_overnight} is the right pipeline to present because it is the cleanest strong submission path and the best match to the Kaggle story.
+
+\paragraph{Takeaway.}
+The project ended with two truths that can coexist peacefully: the \texttt{meta\_overnight} ensemble is the best public, report-ready Kaggle pipeline, while later local experimentation pushed validation a little higher through more intricate stacking. The public repo therefore emphasizes clarity and reproducibility, and the report keeps the later local gains as evidence of what we learned rather than what we chose to publish.

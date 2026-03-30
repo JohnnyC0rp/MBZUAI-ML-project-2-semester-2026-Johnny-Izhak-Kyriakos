@@ -1,0 +1,70 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{inconsolata}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage[labelfont=bf,font=small]{caption}
+\usepackage{enumitem}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[colorlinks=true,linkcolor=MidnightBlue,citecolor=MidnightBlue,urlcolor=MidnightBlue]{hyperref}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage[numbers]{natbib}
+
+\input{macros.tex}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
+\setlist[itemize]{leftmargin=1.4em,itemsep=0.2em,topsep=0.2em}
+\setlist[enumerate]{leftmargin=1.4em,itemsep=0.2em,topsep=0.2em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\projectname}
+\fancyhead[R]{\coursename}
+\fancyfoot[C]{\thepage/\pageref{LastPage}}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    {\Large \coursename \par}
+    \vspace{1.25cm}
+    {\huge\bfseries \projectname \par}
+    \vspace{0.8cm}
+    {\Large Written Report \par}
+    \vspace{1.5cm}
+
+    \begin{tabular}{>{\bfseries}p{0.24\linewidth}p{0.66\linewidth}}
+        Team name & \teamname \\
+        Student names & \studentnames \\
+        Kaggle username(s) & \kaggleuser \\
+        Public-best pipeline & \texttt{meta\_overnight} \\
+        Public-best local combined score & \publicscore \\
+        Strongest local validation score & \privatebest \\
+    \end{tabular}
+
+    \vfill
+    {\large Spring 2026 \par}
+\end{titlepage}
+
+\setcounter{page}{1}
+
+\input{sections/01-overview.tex}
+\input{sections/02-features.tex}
+\input{sections/03-models.tex}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

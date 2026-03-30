@@ -1,0 +1,29 @@
+\section{Data Exploration and Preprocessing}
+
+The assignment asks for two outputs per applicant: a five-class \texttt{RiskTier} prediction and a continuous \texttt{InterestRate} estimate, scored by the equally weighted average of accuracy and \(R^2\) \cite{creditsense_assignment}. The working dataset contains 35{,}000 labeled applications, 15{,}000 test rows, and 55 raw features that mix demographics, income, liabilities, credit history, and loan request context.
+
+The first lesson from exploration was that missing values were informative instead of random noise. Property-related fields were often absent for renters, while some debt fields vanished because the customer simply did not hold that liability. Treating all missingness as the same would hide that semantic structure, so we explicitly encoded missing-value flags before any modeling. Class balance was reasonably healthy, which made validation accuracy stable enough to compare model families without heroic reweighting.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figures/class_distribution.png}
+        \caption{Risk tiers stay fairly balanced.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figures/missingness_overview.png}
+        \caption{Missingness is concentrated in financially meaningful fields.}
+    \end{subfigure}
+    \caption{Initial exploration highlighted both class balance and structured missingness.}
+    \label{fig:eda-core}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.72\linewidth]{figures/rate_by_risk.png}
+    \caption{Interest rates rise monotonically with risk tier, confirming that the two targets are related but not identical.}
+    \label{fig:rate-by-risk}
+\end{figure}
+
+Our preprocessing pipeline stayed intentionally conservative: median filling for numeric columns, ordinal encoding for categoricals, and frequency features for each categorical value. On top of that base, we added finance-specific ratios such as loan-share-of-income, debt pressure, delinquency severity, and derogatory burden. We also added a small controlled set of polynomial interactions so the tree models could capture sharp affordability cliffs without blowing the feature space into nonsense.
