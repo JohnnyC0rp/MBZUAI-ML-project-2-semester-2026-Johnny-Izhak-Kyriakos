@@ -1,0 +1,76 @@
+\documentclass[10pt]{article}
+
+\usepackage[letterpaper,margin=0.82in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{inconsolata}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage[table,dvipsnames]{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{ink}{HTML}{16324F}
+\definecolor{tealaccent}{HTML}{0F766E}
+\definecolor{warmbg}{HTML}{F5EFE7}
+\definecolor{coolbg}{HTML}{EEF5F6}
+\definecolor{lightline}{HTML}{D9E4E7}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.4em}
+\setlist[itemize]{leftmargin=1.25em,itemsep=0.22em,topsep=0.22em}
+\setlist[enumerate]{leftmargin=1.25em,itemsep=0.22em,topsep=0.22em}
+\pagestyle{plain}
+
+\newcommand{\softpanel}[2]{%
+    \fcolorbox{#1!55}{#1!7}{%
+        \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{#2}%
+    }%
+}
+
+\begin{document}
+
+\begin{center}
+    {\Large\bfseries CreditSense: Methods Tried and Project Timeline \par}
+    \vspace{0.35em}
+    {\normalsize A readable record of the branches, ideas, detours, and score jumps that shaped the final project \par}
+    \vspace{0.75em}
+    {\small Johnny Izhak Kyriakos \quad | \quad March 2026 working history \par}
+\end{center}
+
+\vspace{0.5em}
+
+\noindent
+\begin{minipage}[t]{0.60\linewidth}
+\softpanel{tealaccent}{%
+\textbf{What this report is.} The main report only explains the clean final public solution. This document does the opposite: it keeps the messy history intact enough to understand what was tried, what moved the score, what only looked promising for a moment, and why some branches were kept while others were left behind.
+
+\medskip
+\textbf{How the timeline was rebuilt.} The reconstruction comes from saved score tables, result JSON files, long training logs, submission artifacts, and dated project chats. Some early intermediate outputs were overwritten later, so whenever an old exact number is missing, the report says so instead of pretending otherwise.}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.36\linewidth}
+\softpanel{ink}{%
+\textbf{Reading guide}
+\begin{enumerate}
+    \item Timeline first: when the main turns happened.
+    \item Methods matrix second: what each lane was trying to do.
+    \item Compute notes third: what ran on Mac vs HPC and how long it took.
+    \item Final verdict last: what survived into the final project story.
+\end{enumerate}
+
+\textbf{One-line summary.} The best gains came from stronger feature artifacts and careful blending of strong tabular branches. Pure novelty for its own sake usually lost.}
+\end{minipage}
+
+\vspace{0.9em}
+
+\input{sections/01-timeline.tex}
+\input{sections/02-lanes.tex}
+\input{sections/03-compute.tex}
+\input{sections/04-summary.tex}
+
+\end{document}

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 import lightgbm as lgb
 import numpy as np
+import optuna
 import pandas as pd
 import torch
 import torch.nn as nn
@@ -11,104 +12,14 @@ from catboost import CatBoostClassifier, CatBoostRegressor, Pool
 from sklearn.ensemble import ExtraTreesClassifier, ExtraTreesRegressor
 from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.metrics import accuracy_score, r2_score
+from sklearn.model_selection import KFold, StratifiedKFold
 from torch.utils.data import DataLoader, TensorDataset
 from xgboost import XGBClassifier, XGBRegressor
 
+from .artifacts import load_overnight_branch_settings, load_overnight_search_budgets
 from .features import SEED
-from .historical_results import PUBLIC_BLEND_WEIGHTS, PUBLIC_META_PARAMS
 
-
-XGB_PARAMS = {
-    "classifier": {
-        "n_estimators": 2362,
-        "learning_rate": 0.01685964692332667,
-        "max_depth": 6,
-        "min_child_weight": 6,
-        "subsample": 0.7179101176301,
-        "colsample_bytree": 0.8763967731929077,
-        "colsample_bynode": 0.6606255255480127,
-        "reg_lambda": 0.06449560703741104,
-        "reg_alpha": 0.005591184252678481,
-        "gamma": 1.1548117476107294,
-        "max_bin": 204,
-        "grow_policy": "lossguide",
-        "max_leaves": 311,
-    },
-    "regressor": {
-        "n_estimators": 2842,
-        "learning_rate": 0.015728628544447235,
-        "max_depth": 3,
-        "min_child_weight": 1,
-        "subsample": 0.7975683520060733,
-        "colsample_bytree": 0.9646105561009487,
-        "colsample_bynode": 0.9157686025359252,
-        "reg_lambda": 0.0012550082531345016,
-        "reg_alpha": 4.2950164715442937e-07,
-        "gamma": 7.412769196173034,
-        "max_bin": 196,
-        "grow_policy": "depthwise",
-        "max_leaves": 176,
-    },
-}
-
-LGB_PARAMS = {
-    "classifier": {
-        "n_estimators": 3547,
-        "learning_rate": 0.008643911493906807,
-        "num_leaves": 31,
-        "max_depth": 16,
-        "min_child_samples": 18,
-        "subsample": 0.9057718883251947,
-        "colsample_bytree": 0.7183022814156494,
-        "reg_lambda": 0.0625758772637247,
-        "reg_alpha": 0.18170444335513986,
-        "min_split_gain": 0.3402911321071258,
-        "min_child_weight": 0.09963446647768408,
-    },
-    "regressor": {
-        "n_estimators": 1354,
-        "learning_rate": 0.05061630488940815,
-        "num_leaves": 222,
-        "max_depth": 3,
-        "min_child_samples": 10,
-        "subsample": 0.5231550054540709,
-        "colsample_bytree": 0.9793333380317115,
-        "reg_lambda": 0.00013342551763941208,
-        "reg_alpha": 0.00018272749732305054,
-        "min_split_gain": 0.06826896859167665,
-        "min_child_weight": 0.04505814219838221,
-    },
-}
-
-CAT_PARAMS = {
-    "classifier": {
-        "iterations": 2270,
-        "learning_rate": 0.013022853082857326,
-        "depth": 7,
-        "l2_leaf_reg": 0.5700030266291539,
-        "random_strength": 1.0646980873556347e-09,
-        "bagging_temperature": 0.10341809995258132,
-        "border_count": 233,
-        "min_data_in_leaf": 100,
-        "grow_policy": "Depthwise",
-    },
-    "regressor": {
-        "iterations": 4769,
-        "learning_rate": 0.007265798597501486,
-        "depth": 6,
-        "l2_leaf_reg": 0.04550902779089831,
-        "random_strength": 1.6254079088647752e-08,
-        "bagging_temperature": 2.864237368601281,
-        "border_count": 123,
-        "min_data_in_leaf": 62,
-        "grow_policy": "SymmetricTree",
-    },
-}
-
-EXTRA_TREES_CONFIG = {
-    "n_estimators_cls": 1400,
-    "n_estimators_reg": 1600,
-}
+optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 
 @dataclass
@@ -169,6 +80,21 @@ def standardize(train: np.ndarray, others: list[np.ndarray]) -> tuple[np.ndarray
     return (train - mean) / std, [(other - mean) / std for other in others]
 
 
+def overnight_branch_settings() -> dict[str, dict]:
+    return load_overnight_branch_settings()
+
+
+def overnight_search_budgets() -> dict:
+    return load_overnight_search_budgets()
+
+
+def softmax_weights(raw_values: list[float]) -> np.ndarray:
+    values = np.asarray(raw_values, dtype=float)
+    values = values - values.max()
+    exp_values = np.exp(values)
+    return exp_values / exp_values.sum()
+
+
 def train_xgb_branch(
     X_train: np.ndarray,
     X_val: np.ndarray,
@@ -181,8 +107,9 @@ def train_xgb_branch(
     *,
     smoke_test: bool,
 ) -> BranchPredictions:
-    cls_params = scale_training_budget(XGB_PARAMS["classifier"], smoke_test, "classifier")
-    reg_params = scale_training_budget(XGB_PARAMS["regressor"], smoke_test, "regressor")
+    settings = overnight_branch_settings()["xgb"]
+    cls_params = scale_training_budget(settings["classifier"], smoke_test, "classifier")
+    reg_params = scale_training_budget(settings["regressor"], smoke_test, "regressor")
 
     clf = XGBClassifier(
         objective="multi:softprob",
@@ -245,8 +172,9 @@ def train_lgb_branch(
     *,
     smoke_test: bool,
 ) -> BranchPredictions:
-    cls_params = scale_training_budget(LGB_PARAMS["classifier"], smoke_test, "classifier")
-    reg_params = scale_training_budget(LGB_PARAMS["regressor"], smoke_test, "regressor")
+    settings = overnight_branch_settings()["lgb"]
+    cls_params = scale_training_budget(settings["classifier"], smoke_test, "classifier")
+    reg_params = scale_training_budget(settings["regressor"], smoke_test, "regressor")
 
     clf = lgb.LGBMClassifier(
         objective="multiclass",
@@ -314,8 +242,9 @@ def train_catboost_branch(
     *,
     smoke_test: bool,
 ) -> BranchPredictions:
-    cls_params = scale_training_budget(CAT_PARAMS["classifier"], smoke_test, "classifier")
-    reg_params = scale_training_budget(CAT_PARAMS["regressor"], smoke_test, "regressor")
+    settings = overnight_branch_settings()["cat"]
+    cls_params = scale_training_budget(settings["classifier"], smoke_test, "classifier")
+    reg_params = scale_training_budget(settings["regressor"], smoke_test, "regressor")
     cat_idx = [X_train.columns.get_loc(col) for col in categorical_columns if col in X_train.columns]
 
     train_pool_cls = Pool(X_train, y_train_cls, cat_features=cat_idx)
@@ -393,8 +322,9 @@ def train_extratrees_branch(
     *,
     smoke_test: bool,
 ) -> BranchPredictions:
-    n_estimators_cls = 300 if smoke_test else EXTRA_TREES_CONFIG["n_estimators_cls"]
-    n_estimators_reg = 350 if smoke_test else EXTRA_TREES_CONFIG["n_estimators_reg"]
+    settings = overnight_branch_settings()["et"]
+    n_estimators_cls = 300 if smoke_test else settings["n_estimators_classifier"]
+    n_estimators_reg = 350 if smoke_test else settings["n_estimators_regressor"]
     clf = ExtraTreesClassifier(
         n_estimators=n_estimators_cls,
         max_features="sqrt",
@@ -474,14 +404,11 @@ def train_mps_branch(
     smoke_test: bool,
 ) -> BranchPredictions:
     device = choose_torch_device()
+    mps_settings = overnight_branch_settings()["mps"]
+    selected_members = mps_settings["selected_members"]
+    member_configs = selected_members[:1] if smoke_test else selected_members[:3]
     X_train_s, [X_val_s, X_full_s, X_test_s] = standardize(X_train, [X_val, X_full, X_test])
     X_full_fit_s, [X_test_full_s] = standardize(X_full, [X_test])
-    member_seeds = [SEED] if smoke_test else [SEED, 77, 2024]
-    max_epochs = 30 if smoke_test else 90
-    patience = 8 if smoke_test else 18
-    hidden_dim = 256 if smoke_test else 512
-    dropout = 0.20 if smoke_test else 0.18
-    learning_rate = 1e-3
 
     val_proba = np.zeros((X_val.shape[0], 5), dtype=np.float32)
     val_reg = np.zeros(X_val.shape[0], dtype=np.float32)
@@ -489,7 +416,14 @@ def train_mps_branch(
     test_reg = np.zeros(X_test.shape[0], dtype=np.float32)
 
     # The MPS branch is the diversity spice rack, not the whole kitchen.
-    for seed in member_seeds:
+    for member in member_configs:
+        seed = int(member["seed"])
+        hidden_dim = int(member["hidden"])
+        dropout = float(member["dropout"])
+        learning_rate = float(member["lr"])
+        reference_epochs = max(12, int(round(0.5 * (member["cls_best_epoch"] + member["reg_best_epoch"]))))
+        max_epochs = min(18, reference_epochs) if smoke_test else reference_epochs
+        patience = max(5, max_epochs // 3)
         np.random.seed(seed)
         torch.manual_seed(seed)
         model = MultitaskMLP(X_train.shape[1], hidden_dim=hidden_dim, dropout=dropout).to(device)
@@ -548,8 +482,8 @@ def train_mps_branch(
         model.eval()
         with torch.no_grad():
             val_logits, val_reg_out = model(torch.from_numpy(X_val_s.astype(np.float32)).to(device))
-        val_proba += torch.softmax(val_logits, dim=1).cpu().numpy().astype(np.float32) / len(member_seeds)
-        val_reg += np.clip(val_reg_out.cpu().numpy(), 4.99, 35.99).astype(np.float32) / len(member_seeds)
+        val_proba += torch.softmax(val_logits, dim=1).cpu().numpy().astype(np.float32) / len(member_configs)
+        val_reg += np.clip(val_reg_out.cpu().numpy(), 4.99, 35.99).astype(np.float32) / len(member_configs)
 
         full_model = MultitaskMLP(X_full.shape[1], hidden_dim=hidden_dim, dropout=dropout).to(device)
         full_optimizer = torch.optim.AdamW(full_model.parameters(), lr=learning_rate, weight_decay=2e-5)
@@ -563,7 +497,7 @@ def train_mps_branch(
             shuffle=True,
             drop_last=False,
         )
-        for _epoch in range(max(8, max_epochs // 2)):
+        for _epoch in range(max(8, max_epochs)):
             full_model.train()
             for xb, yb_cls, yb_reg in full_loader:
                 xb = xb.to(device)
@@ -578,8 +512,8 @@ def train_mps_branch(
         full_model.eval()
         with torch.no_grad():
             test_logits, test_reg_out = full_model(torch.from_numpy(X_test_full_s.astype(np.float32)).to(device))
-        test_proba += torch.softmax(test_logits, dim=1).cpu().numpy().astype(np.float32) / len(member_seeds)
-        test_reg += np.clip(test_reg_out.cpu().numpy(), 4.99, 35.99).astype(np.float32) / len(member_seeds)
+        test_proba += torch.softmax(test_logits, dim=1).cpu().numpy().astype(np.float32) / len(member_configs)
+        test_reg += np.clip(test_reg_out.cpu().numpy(), 4.99, 35.99).astype(np.float32) / len(member_configs)
 
     return BranchPredictions(
         name="mps",
@@ -590,13 +524,48 @@ def train_mps_branch(
     )
 
 
-def historical_blend(branches: list[BranchPredictions]) -> BranchPredictions:
+def fit_weighted_blend(
+    branches: list[BranchPredictions],
+    y_val_cls: np.ndarray,
+    y_val_reg: np.ndarray,
+    *,
+    smoke_test: bool,
+) -> BranchPredictions:
+    budgets = overnight_search_budgets()
+    timeout_seconds = 90 if smoke_test else int(budgets["blend_timeout_seconds"])
+    trial_cap = 40 if smoke_test else int(budgets["blend_trial_cap"])
+    names = [branch.name for branch in branches]
     branch_map = {branch.name: branch for branch in branches}
-    names = ["xgb", "lgb", "cat", "et", "mps"]
-    val_proba = sum(PUBLIC_BLEND_WEIGHTS["classification"][name] * branch_map[name].val_proba for name in names)
-    val_reg = sum(PUBLIC_BLEND_WEIGHTS["regression"][name] * branch_map[name].val_reg for name in names)
-    test_proba = sum(PUBLIC_BLEND_WEIGHTS["classification"][name] * branch_map[name].test_proba for name in names)
-    test_reg = sum(PUBLIC_BLEND_WEIGHTS["regression"][name] * branch_map[name].test_reg for name in names)
+
+    def objective(trial: optuna.Trial) -> float:
+        cls_weights = softmax_weights([trial.suggest_float(f"cls_{name}", -4.0, 4.0) for name in names])
+        reg_weights = softmax_weights([trial.suggest_float(f"reg_{name}", -4.0, 4.0) for name in names])
+        proba = np.zeros_like(branches[0].val_proba)
+        reg = np.zeros_like(branches[0].val_reg)
+        for idx, name in enumerate(names):
+            proba += cls_weights[idx] * branch_map[name].val_proba
+            reg += reg_weights[idx] * branch_map[name].val_reg
+        return evaluate_predictions(y_val_cls, y_val_reg, proba, reg).combined
+
+    study = optuna.create_study(
+        direction="maximize",
+        sampler=optuna.samplers.TPESampler(seed=SEED),
+    )
+    study.optimize(objective, n_trials=trial_cap, timeout=timeout_seconds, show_progress_bar=False)
+    best_params = study.best_params
+    cls_weights = softmax_weights([best_params[f"cls_{name}"] for name in names])
+    reg_weights = softmax_weights([best_params[f"reg_{name}"] for name in names])
+
+    val_proba = np.zeros_like(branches[0].val_proba)
+    val_reg = np.zeros_like(branches[0].val_reg)
+    test_proba = np.zeros_like(branches[0].test_proba)
+    test_reg = np.zeros_like(branches[0].test_reg)
+    for idx, name in enumerate(names):
+        val_proba += cls_weights[idx] * branch_map[name].val_proba
+        val_reg += reg_weights[idx] * branch_map[name].val_reg
+        test_proba += cls_weights[idx] * branch_map[name].test_proba
+        test_reg += reg_weights[idx] * branch_map[name].test_reg
+
     return BranchPredictions(
         name="blend_overnight",
         val_proba=val_proba.astype(np.float32),
@@ -606,26 +575,67 @@ def historical_blend(branches: list[BranchPredictions]) -> BranchPredictions:
     )
 
 
-def historical_meta(branches: list[BranchPredictions], y_val_cls: np.ndarray, y_val_reg: np.ndarray) -> BranchPredictions:
-    names = ["xgb", "lgb", "cat", "et", "mps"]
-    branch_map = {branch.name: branch for branch in branches}
-    cls_val = [branch_map[name].val_proba for name in names]
-    reg_val = [branch_map[name].val_reg[:, None] for name in names]
-    cls_test = [branch_map[name].test_proba for name in names]
-    reg_test = [branch_map[name].test_reg[:, None] for name in names]
+def fit_meta_ensemble(
+    branches: list[BranchPredictions],
+    y_val_cls: np.ndarray,
+    y_val_reg: np.ndarray,
+    *,
+    smoke_test: bool,
+) -> BranchPredictions:
+    budgets = overnight_search_budgets()
+    meta_trials = budgets["meta_trials"]
+    cls_trials = 18 if smoke_test else int(meta_trials["classifier"])
+    reg_trials = 18 if smoke_test else int(meta_trials["regressor"])
+    n_splits = 3 if smoke_test else 5
+
+    cls_val = [branch.val_proba for branch in branches]
+    reg_val = [branch.val_reg[:, None] for branch in branches]
+    cls_test = [branch.test_proba for branch in branches]
+    reg_test = [branch.test_reg[:, None] for branch in branches]
 
     X_cls_val = np.hstack(cls_val + reg_val).astype(np.float32)
     X_reg_val = np.hstack(reg_val + cls_val).astype(np.float32)
     X_cls_test = np.hstack(cls_test + reg_test).astype(np.float32)
     X_reg_test = np.hstack(reg_test + cls_test).astype(np.float32)
 
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=SEED)
+    kf = KFold(n_splits=n_splits, shuffle=True, random_state=SEED)
+
+    def cls_objective(trial: optuna.Trial) -> float:
+        model = LogisticRegression(
+            C=trial.suggest_float("C", 0.005, 60.0, log=True),
+            max_iter=5_000,
+            solver="lbfgs",
+            random_state=SEED,
+        )
+        scores = []
+        for train_idx, val_idx in skf.split(X_cls_val, y_val_cls):
+            model.fit(X_cls_val[train_idx], y_val_cls[train_idx])
+            pred = model.predict(X_cls_val[val_idx])
+            scores.append(accuracy_score(y_val_cls[val_idx], pred))
+        return float(np.mean(scores))
+
+    def reg_objective(trial: optuna.Trial) -> float:
+        model = Ridge(alpha=trial.suggest_float("alpha", 1e-5, 800.0, log=True), random_state=SEED)
+        scores = []
+        for train_idx, val_idx in kf.split(X_reg_val):
+            model.fit(X_reg_val[train_idx], y_val_reg[train_idx])
+            pred = np.clip(model.predict(X_reg_val[val_idx]), 4.99, 35.99)
+            scores.append(r2_score(y_val_reg[val_idx], pred))
+        return float(np.mean(scores))
+
+    cls_study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(seed=SEED))
+    reg_study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(seed=SEED))
+    cls_study.optimize(cls_objective, n_trials=cls_trials, show_progress_bar=False)
+    reg_study.optimize(reg_objective, n_trials=reg_trials, show_progress_bar=False)
+
     cls_model = LogisticRegression(
-        C=PUBLIC_META_PARAMS["classifier_C"],
-        max_iter=5000,
+        C=float(cls_study.best_params["C"]),
+        max_iter=5_000,
         solver="lbfgs",
         random_state=SEED,
     )
-    reg_model = Ridge(alpha=PUBLIC_META_PARAMS["regressor_alpha"], random_state=SEED)
+    reg_model = Ridge(alpha=float(reg_study.best_params["alpha"]), random_state=SEED)
     cls_model.fit(X_cls_val, y_val_cls)
     reg_model.fit(X_reg_val, y_val_reg)
 

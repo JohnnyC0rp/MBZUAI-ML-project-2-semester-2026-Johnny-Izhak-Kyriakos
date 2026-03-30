@@ -4,13 +4,13 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from .artifacts import PUBLIC_BEST_MODEL
 from .features import fit_preprocessor, load_competition_data, split_train_validation
-from .historical_results import PUBLIC_BEST_MODEL
 from .models import (
     build_submission_frame,
     evaluate_predictions,
-    historical_blend,
-    historical_meta,
+    fit_meta_ensemble,
+    fit_weighted_blend,
     train_catboost_branch,
     train_extratrees_branch,
     train_lgb_branch,
@@ -160,8 +160,18 @@ def run_public_best_pipeline(config: PipelineConfig | None = None) -> dict:
         )
     )
 
-    blend = historical_blend(branches)
-    meta = historical_meta(branches, matrices["y_val_cls"], matrices["y_val_reg"])
+    blend = fit_weighted_blend(
+        branches,
+        matrices["y_val_cls"],
+        matrices["y_val_reg"],
+        smoke_test=config.smoke_test,
+    )
+    meta = fit_meta_ensemble(
+        branches,
+        matrices["y_val_cls"],
+        matrices["y_val_reg"],
+        smoke_test=config.smoke_test,
+    )
 
     score_rows = []
     for branch in [*branches, blend, meta]:

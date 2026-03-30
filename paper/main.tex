@@ -1,6 +1,6 @@
-\documentclass[11pt]{article}
+\documentclass[10pt]{article}
 
-\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[letterpaper,margin=0.88in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{inconsolata}
@@ -16,55 +16,43 @@
 \usepackage[labelfont=bf,font=small]{caption}
 \usepackage{enumitem}
 \usepackage[dvipsnames]{xcolor}
-\usepackage[colorlinks=true,linkcolor=MidnightBlue,citecolor=MidnightBlue,urlcolor=MidnightBlue]{hyperref}
-\usepackage{fancyhdr}
-\usepackage{lastpage}
-\usepackage[numbers]{natbib}
+\usepackage[hidelinks]{hyperref}
 
 \input{macros.tex}
 
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{0.45em}
-\setlist[itemize]{leftmargin=1.4em,itemsep=0.2em,topsep=0.2em}
-\setlist[enumerate]{leftmargin=1.4em,itemsep=0.2em,topsep=0.2em}
+\setlength{\parskip}{0.35em}
+\setlist[itemize]{leftmargin=1.25em,itemsep=0.2em,topsep=0.2em}
+\setlist[enumerate]{leftmargin=1.25em,itemsep=0.2em,topsep=0.2em}
 
-\pagestyle{fancy}
-\fancyhf{}
-\fancyhead[L]{\projectname}
-\fancyhead[R]{\coursename}
-\fancyfoot[C]{\thepage/\pageref{LastPage}}
+\pagestyle{plain}
 
 \begin{document}
 
-\begin{titlepage}
-    \centering
-    {\Large \coursename \par}
-    \vspace{1.25cm}
-    {\huge\bfseries \projectname \par}
-    \vspace{0.8cm}
-    {\Large Written Report \par}
-    \vspace{1.5cm}
+\begin{center}
+    \rule{0.86\linewidth}{1.2pt}
 
-    \begin{tabular}{>{\bfseries}p{0.24\linewidth}p{0.66\linewidth}}
-        Team name & \teamname \\
-        Student names & \studentnames \\
-        Kaggle username(s) & \kaggleuser \\
-        Public-best pipeline & \texttt{meta\_overnight} \\
-        Public-best local combined score & \publicscore \\
-        Strongest local validation score & \privatebest \\
-    \end{tabular}
+    \vspace{0.9em}
+    {\LARGE\bfseries \projectname \par}
+    \vspace{0.35em}
+    {\large Best Public Solution Report \par}
+    \vspace{0.8em}
+    \rule{0.86\linewidth}{0.5pt}
 
-    \vfill
-    {\large Spring 2026 \par}
-\end{titlepage}
+    \vspace{1.0em}
+    {\normalsize \teamname \par}
+    {\small Students: \studentnames \par}
+    {\small Kaggle: \kaggleuser \par}
+    {\small Main submission path: \texttt{meta\_overnight} \par}
+    {\small Public-best local validation: \publicscore \quad | \quad Strongest later local score: \localbestscore \par}
+\end{center}
 
-\setcounter{page}{1}
+\vspace{0.8em}
+
+This report focuses on the public submission lane we would actually hand in. The full project history became much wider than this final path, so here we keep the story tight: what the data looked like, which feature families stayed useful, and how the final ensemble was chosen. The longer methods timeline lives in the separate detailed report.
 
 \input{sections/01-overview.tex}
 \input{sections/02-features.tex}
 \input{sections/03-models.tex}
-
-\bibliographystyle{plainnat}
-\bibliography{references}
 
 \end{document}

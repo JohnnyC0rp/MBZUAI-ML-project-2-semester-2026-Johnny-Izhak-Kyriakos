@@ -1,0 +1,24 @@
+date,artifact,best_model,family,compute_lane,combined,accuracy,r2,elapsed_minutes
+2026-03-20 18:26,poly_parallel_validation_scores.csv,blend_parallel,Poly parallel,Mixed/unknown,0.822506,0.801714,0.843298,
+2026-03-20 18:53,poly_parallel_plus_mps_validation_scores.csv,blend_xgb_lgb_et_mps,Poly parallel + MPS,Mac + MPS,0.834266,0.825000,0.843531,
+2026-03-21 02:32,overnight_validation_scores.csv,meta_overnight,Overnight ensemble,Mixed/unknown,0.849489,0.847714,0.851263,
+2026-03-21 17:55,approach2_classboost_hard_scores.csv,classboost_blend_plus_reg,Branch experiment,Mixed/unknown,0.822625,0.796714,0.848536,11.06
+2026-03-22 02:21,approach4_mps_seed_scores.csv,seed_blend,MPS branch,Mac + MPS,0.846545,0.843000,0.850090,36.93
+2026-03-22 06:06,approach1_rich_oof_scores.csv,meta_rich_oof,Rich OOF stack,Mixed/unknown,0.843187,0.834857,0.851517,261.48
+2026-03-22 08:14,approach1234_combined_scores.csv,calibrated_combined,Combined stack,Mixed/unknown,0.855266,0.855857,0.854675,120.04
+2026-03-22 10:44,approach_extra_aggressive_scores.csv,aggressive_blend,Aggressive features,Mixed/unknown,0.849498,0.845429,0.853567,425.68
+2026-03-25 01:53,approach_target_stats_scores.csv,target_stats_blend,Target-stats family,Mixed/unknown,0.855731,0.856286,0.855177,152.78
+2026-03-25 02:27,approach_regularized_scores.csv,approach3_combo,Regularized branch,Mixed/unknown,0.855266,0.855857,0.854675,34.08
+2026-03-25 03:57,approach_ultimate_scores.csv,target_stats,Ultimate family,Mixed/unknown,0.855731,0.856286,0.855177,90.05
+2026-03-28 00:41,approach_mlp_target_stats_v1_scores.csv,mlp_compact,MLP over target stats,Mac + MPS,0.838140,0.842429,0.833851,23.03
+2026-03-28 00:43,approach_mlp_meta_stack_v1_scores.csv,mlp_meta_stack_v1,Neural/meta stack,Mac + MPS,0.857181,0.858714,0.855648,1.33
+2026-03-28 02:41,approach_mlp_weighted_blend_v1_scores.csv,mlp_weighted_blend_v1,Neural/meta stack,Mac + MPS,0.857645,0.860000,0.855291,120.06
+2026-03-28 15:55,approach_wide_deep_classifier_v1_scores.csv,wide_deep_classifier_v1,HPC classifier family,HPC + CUDA,0.849660,0.844143,0.855177,4.82
+2026-03-28 15:55,approach_residual_mlp_classifier_v2_scores.csv,residual_mlp_classifier_v2,HPC classifier family,HPC + CUDA,0.844660,0.834143,0.855177,5.15
+2026-03-28 16:02,approach_classifier_only_neural_blend_v1_scores.csv,classifier_only_neural_blend_v1,HPC classifier family,HPC + CUDA,0.856946,0.858714,0.855177,4.47
+2026-03-28 17:21,approach_wide_deep_classifier_oof_v2_scores.csv,wide_deep_classifier_oof_v2,HPC classifier family,HPC + CUDA,0.847446,0.839714,0.855177,40.18
+2026-03-29 14:10,approach_tree_teacher_classifier_bagging_v2_scores.csv,lgb,Teacher/distillation family,HPC + CUDA,0.829660,0.804143,0.855177,368.29
+2026-03-29 14:10,approach_distilled_wide_deep_classifier_v1_scores.csv,distilled_wide_deep_classifier_v1,Teacher/distillation family,HPC + CUDA,0.850160,0.845143,0.855177,53.43
+2026-03-29 14:10,approach_classifier_holdout_blend_v2_scores.csv,classifier_holdout_blend_v2,HPC classifier family,HPC + CUDA,0.857517,0.859857,0.855177,20.31
+2026-03-29 19:18,approach_professor_classical_screen_v1_scores.csv,xgb,Professor lane,HPC + CUDA,0.833689,0.819000,0.848378,23.37
+2026-03-29 21:37,approach_professor_target_stats_scores.csv,target_stats_blend,Professor lane,HPC + CUDA,0.856566,0.857714,0.855418,161.83

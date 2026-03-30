@@ -1,0 +1,4 @@
+date,submission,public_score,source_note
+2026-03-20,LightGBM baseline,0.82043,Recovered from the March 20 chat after the first Kaggle calibration pass
+2026-03-20,Blend of xgb+lgbm+extratrees,0.81834,Recovered from the March 20 chat after the first Kaggle calibration pass
+2026-03-20,XGBoost baseline,0.81558,Recovered from the March 20 chat after the first Kaggle calibration pass

@@ -1,0 +1,53 @@
+{
+  "seed": 42,
+  "timeouts_seconds": {
+    "classifier": 9900,
+    "regressor": 9900
+  },
+  "trial_cap": 5000,
+  "model_n_jobs": 4,
+  "early_stopping_rounds": 180,
+  "trials_done": {
+    "classifier": 148,
+    "regressor": 1866
+  },
+  "best_params": {
+    "lgbm_classifier": {
+      "n_estimators": 3547,
+      "learning_rate": 0.008643911493906807,
+      "num_leaves": 31,
+      "max_depth": 16,
+      "min_child_samples": 18,
+      "subsample": 0.9057718883251947,
+      "colsample_bytree": 0.7183022814156494,
+      "reg_lambda": 0.0625758772637247,
+      "reg_alpha": 0.18170444335513986,
+      "min_split_gain": 0.3402911321071258,
+      "min_child_weight": 0.09963446647768408
+    },
+    "lgbm_regressor": {
+      "n_estimators": 1354,
+      "learning_rate": 0.05061630488940815,
+      "num_leaves": 222,
+      "max_depth": 3,
+      "min_child_samples": 10,
+      "subsample": 0.5231550054540709,
+      "colsample_bytree": 0.9793333380317115,
+      "reg_lambda": 0.00013342551763941208,
+      "reg_alpha": 0.00018272749732305054,
+      "min_split_gain": 0.06826896859167665,
+      "min_child_weight": 0.04505814219838221
+    }
+  },
+  "best_objective_scores": {
+    "classifier_accuracy": 0.8062857142857143,
+    "regressor_r2": 0.8439941234693402
+  },
+  "val_metrics_after_refit": {
+    "accuracy": 0.8062857142857143,
+    "r2": 0.8439941234693402,
+    "combined": 0.8251399188775272
+  },
+  "preds_npz": "tmp/preds_lgb_poly_overnight.npz",
+  "elapsed_minutes": 335.23
+}

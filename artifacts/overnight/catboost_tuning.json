@@ -1,0 +1,49 @@
+{
+  "seed": 42,
+  "timeouts_seconds": {
+    "classifier": 9900,
+    "regressor": 9900
+  },
+  "trial_cap": 5000,
+  "thread_count": 4,
+  "early_stopping_rounds": 220,
+  "trials_done": {
+    "classifier": 26,
+    "regressor": 208
+  },
+  "best_params": {
+    "catboost_classifier": {
+      "iterations": 2270,
+      "learning_rate": 0.013022853082857326,
+      "depth": 7,
+      "l2_leaf_reg": 0.5700030266291539,
+      "random_strength": 1.0646980873556347e-09,
+      "bagging_temperature": 0.10341809995258132,
+      "border_count": 233,
+      "min_data_in_leaf": 100,
+      "grow_policy": "Depthwise"
+    },
+    "catboost_regressor": {
+      "iterations": 4769,
+      "learning_rate": 0.007265798597501486,
+      "depth": 6,
+      "l2_leaf_reg": 0.04550902779089831,
+      "random_strength": 1.6254079088647752e-08,
+      "bagging_temperature": 2.864237368601281,
+      "border_count": 123,
+      "min_data_in_leaf": 62,
+      "grow_policy": "SymmetricTree"
+    }
+  },
+  "best_objective_scores": {
+    "classifier_accuracy": 0.8027142857142857,
+    "regressor_r2": 0.8478437779419221
+  },
+  "val_metrics_after_refit": {
+    "accuracy": 0.8027142857142857,
+    "r2": 0.8478437779419221,
+    "combined": 0.8252790318281039
+  },
+  "preds_npz": "tmp/preds_catboost_poly_overnight.npz",
+  "elapsed_minutes": 346.87
+}

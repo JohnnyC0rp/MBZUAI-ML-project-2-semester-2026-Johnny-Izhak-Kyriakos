@@ -1,0 +1,57 @@
+{
+  "seed": 42,
+  "timeouts_seconds": {
+    "classifier": 9900,
+    "regressor": 9900
+  },
+  "trial_cap": 5000,
+  "model_n_jobs": 4,
+  "early_stopping_rounds": 120,
+  "trials_done": {
+    "classifier": 76,
+    "regressor": 566
+  },
+  "best_params": {
+    "xgb_classifier": {
+      "n_estimators": 2362,
+      "learning_rate": 0.01685964692332667,
+      "max_depth": 6,
+      "min_child_weight": 6,
+      "subsample": 0.7179101176301,
+      "colsample_bytree": 0.8763967731929077,
+      "colsample_bynode": 0.6606255255480127,
+      "reg_lambda": 0.06449560703741104,
+      "reg_alpha": 0.005591184252678481,
+      "gamma": 1.1548117476107294,
+      "max_bin": 204,
+      "grow_policy": "lossguide",
+      "max_leaves": 311
+    },
+    "xgb_regressor": {
+      "n_estimators": 2842,
+      "learning_rate": 0.015728628544447235,
+      "max_depth": 3,
+      "min_child_weight": 1,
+      "subsample": 0.7975683520060733,
+      "colsample_bytree": 0.9646105561009487,
+      "colsample_bynode": 0.9157686025359252,
+      "reg_lambda": 0.0012550082531345016,
+      "reg_alpha": 4.2950164715442937e-07,
+      "gamma": 7.412769196173034,
+      "max_bin": 196,
+      "grow_policy": "depthwise",
+      "max_leaves": 176
+    }
+  },
+  "best_objective_scores": {
+    "classifier_accuracy": 0.7952857142857143,
+    "regressor_r2": 0.8453383445739746
+  },
+  "val_metrics_after_refit": {
+    "accuracy": 0.7952857142857143,
+    "r2": 0.8453383445739746,
+    "combined": 0.8203120294298445
+  },
+  "preds_npz": "tmp/preds_xgb_poly_overnight.npz",
+  "elapsed_minutes": 334.96
+}

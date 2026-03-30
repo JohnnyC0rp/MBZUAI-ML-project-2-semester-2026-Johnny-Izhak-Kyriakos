@@ -1,0 +1,6 @@
+addition,validation_combined,why_it_helped
+Domain ratios and semantic missingness flags,0.8225062114511217,"Affordability, utilization, and context-aware missingness were much stronger than raw columns alone."
+Controlled polynomial interactions,0.8251399274553571,A small interaction set captured stress combinations without exploding the feature space.
+Tree ensemble diversification,0.8494888746057239,"Different tree families made different mistakes, so the ensemble became much more stable."
+Target statistics and bagging,0.8557313795770918,Target-aware categorical summaries helped the strong local-only branch family.
+Neural branch and weighted fusion,0.857645444869995,The neural branch added smooth non-linear structure that the tree lanes missed.

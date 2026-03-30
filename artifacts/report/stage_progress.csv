@@ -1,0 +1,8 @@
+stage,combined,category,summary
+Assignment baseline,0.51,baseline,Starter notebook with a simple linear baseline and minimal preprocessing.
+Polynomial parallel blend,0.8225062114511217,feature_engineering,"Shared finance ratios, semantic missingness flags, and controlled polynomial features."
+Polynomial plus MPS blend,0.8342656575067716,feature_engineering,Added the first small MPS branch on top of the polynomial tree family.
+Boosted overnight meta ensemble,0.8494888746057239,public_best,"XGBoost, LightGBM, CatBoost, ExtraTrees, and an MPS lane combined through a meta model."
+Target-stats bagging,0.8557313795770918,local_research,Out-of-fold target statistics and bagging pushed the local score above the public lane.
+MLP meta stack,0.8571810142312731,local_research,A compact neural lane improved the final combiner on local validation.
+Final weighted local blend,0.857645444869995,local_best,The strongest local blend used a small weighted mix of the best late-stage branches.

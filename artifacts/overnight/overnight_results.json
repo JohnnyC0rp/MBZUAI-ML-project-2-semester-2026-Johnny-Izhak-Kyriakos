@@ -1,0 +1,117 @@
+{
+  "seed": 42,
+  "blend_timeout_seconds": 4200,
+  "blend_trial_cap": 25000,
+  "meta_trials": {
+    "classifier": 180,
+    "regressor": 180
+  },
+  "chosen_prediction_files": {
+    "xgb": "tmp/preds_xgb_poly_overnight.npz",
+    "lgb": "tmp/preds_lgb_poly_overnight.npz",
+    "cat": "tmp/preds_catboost_poly_overnight.npz",
+    "et": "tmp/preds_extratrees_poly_parallel.npz",
+    "mps": "tmp/preds_mps_tabular_ensemble_overnight.npz"
+  },
+  "validation_rows": [
+    {
+      "model": "meta_overnight",
+      "accuracy": 0.8477142857142858,
+      "r2": 0.8512634634971619,
+      "combined": 0.8494888746057239
+    },
+    {
+      "model": "blend_overnight",
+      "accuracy": 0.8424285714285714,
+      "r2": 0.8485081791877747,
+      "combined": 0.8454683753081731
+    },
+    {
+      "model": "cat",
+      "accuracy": 0.8027142857142857,
+      "r2": 0.8478437662124634,
+      "combined": 0.8252790259633745
+    },
+    {
+      "model": "lgb",
+      "accuracy": 0.8062857142857143,
+      "r2": 0.843994140625,
+      "combined": 0.8251399274553571
+    },
+    {
+      "model": "xgb",
+      "accuracy": 0.7952857142857143,
+      "r2": 0.8453383445739746,
+      "combined": 0.8203120294298445
+    },
+    {
+      "model": "mps",
+      "accuracy": 0.8334285714285714,
+      "r2": 0.805892288684845,
+      "combined": 0.8196604300567082
+    },
+    {
+      "model": "et",
+      "accuracy": 0.6934285714285714,
+      "r2": 0.7304902076721191,
+      "combined": 0.7119593895503453
+    }
+  ],
+  "blend": {
+    "models": [
+      "xgb",
+      "lgb",
+      "cat",
+      "et",
+      "mps"
+    ],
+    "weights_cls": [
+      0.008740858016119181,
+      0.20307576518618675,
+      0.11571774095618016,
+      0.0005104289674535134,
+      0.6719552068740603
+    ],
+    "weights_reg": [
+      0.34518176535858996,
+      0.0007090315461353092,
+      0.6525907505844593,
+      0.0008418488620459765,
+      0.0006766036487695478
+    ],
+    "metrics": {
+      "accuracy": 0.8424285714285714,
+      "r2": 0.8485081791877747,
+      "combined": 0.8454683753081731
+    },
+    "trials_done": 24817
+  },
+  "meta": {
+    "models": [
+      "xgb",
+      "lgb",
+      "cat",
+      "et",
+      "mps"
+    ],
+    "metrics": {
+      "accuracy": 0.8477142857142858,
+      "r2": 0.8512634634971619,
+      "combined": 0.8494888746057239
+    },
+    "classifier": {
+      "C": 2.382599395818209,
+      "cv_accuracy": 0.8474285714285713
+    },
+    "regressor": {
+      "alpha": 59.71871840227128,
+      "cv_r2": 0.8468709349632263
+    }
+  },
+  "best_submission_model": "meta_overnight",
+  "submissions": {
+    "blend": "submissions/submission_overnight_blend.csv",
+    "meta": "submissions/submission_overnight_meta.csv",
+    "best": "submissions/submission_overnight_best.csv"
+  }
+}

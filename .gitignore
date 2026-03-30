@@ -18,6 +18,7 @@ _rendered/
 __pycache__/
 .ipynb_checkpoints/
 .DS_Store
+tmp/
 paper/_rendered/
 paper/*.aux
 paper/*.bbl
@@ -29,3 +30,4 @@ paper/*.log
 paper/*.out
 paper/*.run.xml
 paper/*.synctex.gz
+!methods_tried_detailed_report/main.pdf
