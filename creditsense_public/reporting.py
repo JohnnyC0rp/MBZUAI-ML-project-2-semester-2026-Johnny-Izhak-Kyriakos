@@ -63,6 +63,34 @@ def build_report_figures(figure_dir: Path) -> dict[str, dict[str, Path]]:
     fig.update_layout(yaxis={"categoryorder": "total ascending"})
     outputs["missingness"] = _write_plotly(fig, "missingness_overview", figure_dir)
 
+    # Missingness was not being mysterious here; home-ownership explains most of it.
+    homeownership_missing = (
+        train_df.assign(HomeOwnership=train_df["HomeOwnership"].fillna("Missing"))
+        .groupby("HomeOwnership", as_index=False)
+        .agg(
+            property_missing_pct=("PropertyValue", lambda col: 100.0 * col.isna().mean()),
+            mortgage_missing_pct=("MortgageOutstandingBalance", lambda col: 100.0 * col.isna().mean()),
+        )
+        .melt(id_vars="HomeOwnership", var_name="feature", value_name="missing_pct")
+    )
+    homeownership_missing["feature"] = homeownership_missing["feature"].map(
+        {
+            "property_missing_pct": "PropertyValue",
+            "mortgage_missing_pct": "MortgageOutstandingBalance",
+        }
+    )
+    fig = px.bar(
+        homeownership_missing,
+        x="HomeOwnership",
+        y="missing_pct",
+        color="feature",
+        barmode="group",
+        title="Property and mortgage missingness follows home-ownership status",
+        color_discrete_sequence=["#0f8b8d", "#b83b5e"],
+    )
+    fig.update_layout(yaxis_title="Missing rate (%)", legend_title_text="")
+    outputs["semantic_missingness"] = _write_plotly(fig, "semantic_missingness_context", figure_dir)
+
     stage_df = load_report_table("stage_progress.csv")
     fig = px.line(
         stage_df,
@@ -125,6 +153,41 @@ def build_report_figures(figure_dir: Path) -> dict[str, dict[str, Path]]:
     )
     fig.for_each_annotation(lambda ann: ann.update(text=ann.text.split("=")[-1]))
     outputs["feature_signal"] = _write_plotly(fig, "feature_signal_comparison", figure_dir)
+
+    # A compact heatmap is easier to read than 57-way statistical chaos.
+    corr_columns = [
+        "RiskTier",
+        "InterestRate",
+        "LatePaymentSeverity",
+        "DerogatorySeverity",
+        "RevolvingUtilizationRate",
+        "DebtPressure",
+        "LoanShareOfIncome",
+        "AssetCoverage",
+    ]
+    corr_frame = pd.concat([engineered, train_df[["RiskTier", "InterestRate"]]], axis=1)[corr_columns].corr(numeric_only=True)
+    label_map = {
+        "RiskTier": "RiskTier",
+        "InterestRate": "InterestRate",
+        "LatePaymentSeverity": "LatePaymentSeverity",
+        "DerogatorySeverity": "DerogatorySeverity",
+        "RevolvingUtilizationRate": "Utilization",
+        "DebtPressure": "DebtPressure",
+        "LoanShareOfIncome": "LoanShareOfIncome",
+        "AssetCoverage": "AssetCoverage",
+    }
+    corr_frame = corr_frame.rename(index=label_map, columns=label_map)
+    fig = px.imshow(
+        corr_frame.round(2),
+        text_auto=".2f",
+        color_continuous_scale="RdBu_r",
+        zmin=-1.0,
+        zmax=1.0,
+        aspect="auto",
+        title="Selected correlations among the targets and strongest engineered signals",
+    )
+    fig.update_layout(coloraxis_colorbar_title="corr")
+    outputs["correlation_focus"] = _write_plotly(fig, "correlation_focus", figure_dir)
 
     risk_rate = (
         train_df.groupby("RiskTier", as_index=False)["InterestRate"]

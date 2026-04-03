@@ -1,39 +1,47 @@
 \section{Model Selection \& Final Pipeline}
 
-After the feature set settled down, the model story became much cleaner. Single models were good enough to guide the search, but the best public path came from letting several branch families vote in different ways:
+Once the feature set stopped changing, model selection became easier to organize. The branch search followed one simple rule: keep model families only when they added either stronger single-model performance or genuinely different errors. The final submission combined five branches:
 \begin{enumerate}
-    \item XGBoost on the engineered numeric matrix.
-    \item LightGBM on the same processed frame.
-    \item CatBoost on the mixed feature table with categorical columns preserved.
-    \item ExtraTrees as a strong but simpler diversity branch.
-    \item An MPS neural branch to add a different error profile.
+    \item XGBoost on the shared engineered numeric matrix;
+    \item LightGBM on the same matrix, with a different boosting bias;
+    \item CatBoost on the mixed table with categorical columns preserved as categories;
+    \item ExtraTrees as a weaker but diverse non-boosted tree baseline;
+    \item a compact MPS neural branch trained jointly for classification and regression.
 \end{enumerate}
 
-The final implementation preserves the tuned branch configurations from the overnight search artifacts and re-estimates the blend and meta-combiner during execution. This keeps the ensemble specification tied to the saved branch families rather than to fixed hand-written constants.
+Table~\ref{tab:model-table} summarizes the main saved checkpoints from this search. Among the single branches, LightGBM and CatBoost gave the most balanced results, while the MPS branch was useful because its mistakes were less aligned with the tree branches. ExtraTrees was clearly weaker on its own, but keeping one simpler branch still helped the combined models by adding diversity. The best submitted solution was not the weighted average but the meta-ensemble, which stacked branch outputs with a logistic classifier for Task A and a ridge regressor for Task B.
 
 \begin{table}[H]
     \centering
-    \small
-    \begin{tabular}{@{} l c c c @{}}
+    \scriptsize
+    \begin{tabularx}{\linewidth}{@{} l c c c X @{}}
         \toprule
-        Model & Accuracy & \(R^2\) & Combined \\
+        Model & Accuracy & \(R^2\) & Combined & Comment \\
         \midrule
-        \texttt{meta\_overnight} & 0.8477 & 0.8513 & \textbf{0.8495} \\
-        \texttt{blend\_overnight} & 0.8424 & 0.8485 & 0.8455 \\
-        \texttt{target\_stats\_blend} & 0.8563 & 0.8552 & 0.8557 \\
-        \texttt{mlp\_meta\_stack\_v1} & 0.8587 & 0.8556 & 0.8572 \\
-        \texttt{mlp\_weighted\_blend\_v1} & 0.8600 & 0.8553 & \textbf{0.8576} \\
+        XGBoost & 0.7953 & 0.8453 & 0.8203 & Strong regressor after feature engineering, weaker classifier than the best boosters. \\
+        LightGBM & 0.8063 & 0.8440 & 0.8251 & Best balanced single tree branch on the shared matrix. \\
+        CatBoost & 0.8027 & 0.8478 & 0.8253 & Strongest single regressor; benefited from raw categorical columns. \\
+        ExtraTrees & 0.6934 & 0.7305 & 0.7120 & Weak alone, but still added diversity inside the ensemble. \\
+        MPS neural branch & 0.8334 & 0.8059 & 0.8197 & Different error profile; more useful in combination than alone. \\
+        Weighted blend & 0.8424 & 0.8485 & 0.8455 & Simple averaging already beat every single branch. \\
+        Meta ensemble & 0.8477 & 0.8513 & \textbf{0.8495} & Final submitted pipeline and best saved submission-ready score. \\
         \bottomrule
-    \end{tabular}
-    \caption{Representative validation checkpoints from the project.}
+    \end{tabularx}
+    \caption{Model families tried for the final submission lane and their validation results.}
     \label{tab:model-table}
 \end{table}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.86\linewidth]{figures/stage_progress.png}
-    \caption{The project kept improving after the public-best lane, but those later gains came from heavier local-only combinations rather than a cleaner public submission path.}
-    \label{fig:stage-progress}
+    \includegraphics[width=0.74\linewidth]{figures/model_leaderboard.png}
+    \caption{Leaderboard view of the saved model checkpoints used in the main report.}
+    \label{fig:model-leaderboard}
 \end{figure}
 
-The strongest local validation score was reached by a later hybrid blend, but the \texttt{meta\_overnight} family remained the most coherent final pipeline for the released submission path. It retained competitive performance while preserving a direct and fully specified mapping from the raw tables to the final prediction file.
+\textbf{Overfitting control.} Every branch was compared on the same stratified split, the interaction set was kept deliberately small, and the tree models were tuned under fixed time budgets before refitting only the selected settings. The MPS branch added dropout, weight decay, gradient clipping, and patience-based early stopping, while the meta-ensemble tuned its logistic and ridge combiners through cross-validation rather than an unrestricted second-level learner.
+
+\textbf{Do the same features matter equally for both tasks?} Broadly yes, but not in exactly the same form. Both targets depend on delinquency history, derogatory marks, and utilization; however, classification reacts more directly to raw counts, whereas regression leans more strongly on interaction terms such as \texttt{LateSeverityXUtilization}. This is why every branch kept separate classification and regression heads until the final submission stage.
+
+\textbf{Final submitted pipeline.} Inference proceeds in five steps: build the shared engineered table; train XGBoost, LightGBM, CatBoost, ExtraTrees, and the multitask MPS branch on the saved overnight settings; collect branch probabilities and rate predictions; fit the logistic and ridge meta-combiners; then clip the final APR to \([4.99, 35.99]\) and round it to two decimals.
+
+This \texttt{meta\_overnight} lane reached a combined local validation score of \publicscore. Later local research branches pushed the score higher, but the submitted model remained the cleanest fully specified pipeline for the assignment deliverable.

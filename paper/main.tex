@@ -29,27 +29,36 @@
 
 \begin{document}
 
-\begin{center}
-    \rule{0.86\linewidth}{1.2pt}
+\begin{titlepage}
+    \thispagestyle{empty}
+    \begin{center}
+        \vspace*{\fill}
+        {\large MBZUAI \par}
+        \vspace{0.55cm}
+        {\large AI1215 --- Introduction to Machine Learning \par}
+        \vspace{1.5cm}
+        {\Huge\bfseries \projectname \par}
+        \vspace{0.45cm}
+        {\Large Final Project Report \par}
+        \vspace{1.6cm}
+        \rule{0.72\linewidth}{0.9pt}
+        \vspace{0.85cm}
 
-    \vspace{0.9em}
-    {\LARGE\bfseries \projectname \par}
-    \vspace{0.35em}
-    {\large Best Public Solution Report \par}
-    \vspace{0.8em}
-    \rule{0.86\linewidth}{0.5pt}
+        \begin{tabular}{rl}
+            Team name: & \teamname \\
+            Students: & \studentnames \\
+            Kaggle username: & \kaggleuser \\
+            Final submission family: & \texttt{meta\_overnight} \\
+            Date: & April 2026 \\
+        \end{tabular}
 
-    \vspace{1.0em}
-    {\normalsize \teamname \par}
-    {\small Students: \studentnames \par}
-    {\small Kaggle: \kaggleuser \par}
-    {\small Main submission path: \texttt{meta\_overnight} \par}
-    {\small Public-best local validation: \publicscore \quad | \quad Strongest later local score: \localbestscore \par}
-\end{center}
+        \vspace{0.9cm}
+        \rule{0.72\linewidth}{0.5pt}
+        \vspace*{\fill}
+    \end{center}
+\end{titlepage}
 
-\vspace{0.8em}
-
-This report documents the final submission pipeline used for the cleaned public release. It summarizes the data characteristics, the feature families that remained useful after screening, and the ensemble structure used in the final model selection stage. A broader chronology of the project is provided in the separate methods report.
+This report summarizes the final submitted pipeline for the CreditSense challenge. The task combines a five-class classification problem with a bounded regression problem, and Kaggle scores each submission by averaging classification accuracy and regression \(R^2\). Our development therefore focused on changes that improved both targets at the same time, while keeping the final solution reproducible from the saved branch artifacts and the final implementation.
 
 \input{sections/01-overview.tex}
 \input{sections/02-features.tex}

@@ -1,26 +1,47 @@
 \section{Feature Engineering}
 
-Most of the score jump came from feature work, not from swapping one model for another. The raw columns were already useful, but they hid the borrower story. We got much better results once we started writing features that sounded like lending questions instead of spreadsheet formulas.
+Most of the score jump came from feature work rather than from replacing one learner with another. The original columns already described income, debt, assets, and credit history, but many of the strongest relationships only became clear after the variables were expressed as lending ratios, delinquency summaries, or context-aware flags.
 
 \begin{table}[H]
     \centering
     \small
     \begin{tabularx}{\linewidth}{@{} p{0.22\linewidth} p{0.34\linewidth} X @{}}
         \toprule
-        Feature family & Examples & Why it stayed in the final public pipeline \\
+        Feature family & Examples & Why it stayed in the final submitted pipeline \\
         \midrule
-        Affordability ratios & loan share of income, monthly payment share, asset coverage & These features turned raw balances into simple stress indicators and helped both targets. \\
-        Delinquency features & weighted late-payment counts, severity over history length, utilization interactions & They were consistently strong for \texttt{RiskTier} and also improved rate prediction. \\
-        Derogatory burden & charge-off, collection, bankruptcy, and public-record aggregates & A compact way to summarize past damage without relying on a single raw field. \\
-        Semantic missingness & renter-without-property, owner-without-mortgage, no-collateral flags & These features captured why a field was blank, which was often more useful than the filled value itself. \\
-        Controlled interactions & selected pairwise products between stress and balance features & A small interaction set helped the tree models find sharper non-linear boundaries. \\
+        Affordability ratios & loan share of income, monthly payment share, asset coverage & These features turned raw balances into stress measures that were interpretable for both tasks. \\
+        Delinquency summaries & weighted late-payment counts, late payments per history year, utilization interactions & They were the most reliable features for separating higher risk tiers and explaining large APR jumps. \\
+        Derogatory burden & charge-off, collection, bankruptcy, and public-record aggregates & A compact summary of past credit damage that avoided over-relying on any single raw count. \\
+        Semantic missingness & renter-without-property, owner-without-mortgage, no-collateral flags & These features captured why a field was absent, which often mattered more than the filled value. \\
+        Controlled interactions & selected pairwise products between stress and balance features & A small interaction set gave the tree models non-linear structure without exploding the feature space. \\
         \bottomrule
     \end{tabularx}
-    \caption{Feature groups that mattered enough to survive into the best public lane.}
+    \caption{Feature groups retained in the final submitted pipeline.}
     \label{tab:feature-families}
 \end{table}
 
-Figure~\ref{fig:feature-signal} shows the same pattern from another angle. The two targets overlap, but they do not rank features in exactly the same way. Delinquency and utilization features dominate the classification side, while affordability and balance-sheet coverage matter a bit more for the rate regression.
+Table~\ref{tab:feature-deltas} tracks the large additions that moved the validation score during the project. The first major step was the jump from the assignment baseline to the ratio-and-missingness feature set. Controlled polynomial terms gave only a small extra gain, which was a useful warning that feature count alone was not the answer. The next substantial jump came from combining different tree families on top of the engineered table. Later gains from target statistics and the neural branch were real, but smaller.
+
+\begin{table}[H]
+    \centering
+    \scriptsize
+    \begin{tabularx}{\linewidth}{@{} p{0.30\linewidth} c c X @{}}
+        \toprule
+        Stage & Combined score & Gain vs previous & Main effect \\
+        \midrule
+        Assignment baseline & 0.5100 & --- & Starter notebook with minimal preprocessing. \\
+        Domain ratios and semantic missingness & 0.8225 & +0.3125 & Added affordability, utilization, and context-aware missingness features. \\
+        Controlled polynomial interactions & 0.8251 & +0.0026 & Added a restricted interaction set around stress and debt variables. \\
+        Tree ensemble diversification & 0.8495 & +0.0243 & Combined XGBoost, LightGBM, CatBoost, ExtraTrees, and the MPS branch. \\
+        Target statistics and bagging & 0.8557 & +0.0062 & Improved categorical summaries for later local experiments. \\
+        Neural branch and weighted fusion & 0.8576 & +0.0019 & Added a smoother neural error profile and a stronger late-stage combiner. \\
+        \bottomrule
+    \end{tabularx}
+    \caption{How major feature and model additions changed the validation score.}
+    \label{tab:feature-deltas}
+\end{table}
+
+Figure~\ref{fig:feature-signal} shows the target-specific ranking of the strongest engineered variables. The two tasks clearly overlap, but they do not react to exactly the same form of signal. For classification, the most useful variables are raw delinquency counts, utilization, and their interaction terms. For regression, the ordering leans even more strongly toward severity interactions such as \texttt{LateSeverityXUtilization}. In other words, the same borrower history matters for both tasks, but the rate model is slightly more sensitive to how several risk signals combine.
 
 \begin{figure}[H]
     \centering
@@ -29,4 +50,4 @@ Figure~\ref{fig:feature-signal} shows the same pattern from another angle. The t
     \label{fig:feature-signal}
 \end{figure}
 
-We also tracked how the score changed when major feature ideas were added. The important pattern is not that every extra trick helped, but that the first few feature families changed the game while later additions gave smaller and more selective gains. The overall project progression later in the report follows the same logic.
+The final feature set was therefore not a maximal one. We kept only feature groups that either improved both tasks directly or increased diversity for the ensemble stage.
