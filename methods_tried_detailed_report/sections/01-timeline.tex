@@ -3,7 +3,7 @@
 The project changed direction a few times, but the main arc was fairly consistent: baseline recovery first, then stronger tree ensembles, then a target-stat branch, then neural or meta layers on top of those tabular sources, and finally a professor-inspired parallel lane to test whether broader feature generation could push the upstream score further.
 
 \softpanel{ink}{%
-\textbf{If you only want the short version}
+\textbf{Summary of the main findings}
 \begin{itemize}
     \item The first reliable jump came from turning the baseline into a stronger tree ensemble, not from chasing exotic models too early.
     \item The most important classical step was the target-stats branch.
@@ -30,7 +30,7 @@ The project changed direction a few times, but the main arc was fairly consisten
         Mar 25 & Target-stats branch & 0.855731 & OOF target statistics and stronger pruning pushed the main classical branch into the mid 0.855 range. \\
         Mar 28 & Neural and meta topping & 0.857645 & The best local score came from a weighted neural/meta blend placed on top of strong tabular branches rather than a fully neural replacement. \\
         Mar 29 & Professor lane & 0.856566 & Broader feature generation and a refreshed target-stats branch improved the upstream source a bit, but did not replace the strongest final blends. \\
-        Mar 30 & Public packaging & 0.849489 & The public repo was rebuilt around the cleaner overnight lane because it stayed reproducible and easy to explain. \\
+        Mar 30 & Public packaging & 0.849489 & The final release was organized around the overnight lane because it remained reproducible, explicit, and structurally stable. \\
     \end{tabularx}
     \caption{The seven project turns that matter most to the final story.}
 \end{table}

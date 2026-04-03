@@ -9,7 +9,7 @@ After the feature set settled down, the model story became much cleaner. Single 
     \item An MPS neural branch to add a different error profile.
 \end{enumerate}
 
-Instead of freezing mysterious blend weights inside the report code, the public repo now reads the original tuned branch configurations from saved overnight artifacts and fits the blend/meta combiner openly in code. That is closer to how the actual project worked and much easier to explain.
+The final implementation preserves the tuned branch configurations from the overnight search artifacts and re-estimates the blend and meta-combiner during execution. This keeps the ensemble specification tied to the saved branch families rather than to fixed hand-written constants.
 
 \begin{table}[H]
     \centering
@@ -36,4 +36,4 @@ Instead of freezing mysterious blend weights inside the report code, the public 
     \label{fig:stage-progress}
 \end{figure}
 
-The final choice was mostly a trade-off between clarity and squeezing out the last few thousandths. We did reach a stronger local score later, but that route was harder to present cleanly and harder to justify as the main public notebook. For the repo and the report, \texttt{meta\_overnight} is the right landing point: strong score, readable branch structure, and a direct path from raw CSVs to a final submission file.
+The strongest local validation score was reached by a later hybrid blend, but the \texttt{meta\_overnight} family remained the most coherent final pipeline for the released submission path. It retained competitive performance while preserving a direct and fully specified mapping from the raw tables to the final prediction file.
