@@ -63,10 +63,3 @@ pdftoppm -png methods_tried_detailed_report/main.pdf methods_tried_detailed_repo
 ```
 
 The `pdftoppm` commands export page previews so you can visually check the PDFs instead of trusting the source.
-
-## Notes
-
-- The public notebook now reads the original overnight tuning artifacts from `artifacts/overnight/` instead of hiding scores and settings in a separate leaderboard-style Python file.
-- The final public submission path in this repo is `meta_overnight`.
-- The strongest later local score was higher, but it came from a heavier local-only blend that is covered in the separate methods report rather than the main report.
-- The main report explains the clean public submission lane. The longer project history, branch timeline, and “what we tried” story live in `methods_tried_detailed_report/main.pdf`.
